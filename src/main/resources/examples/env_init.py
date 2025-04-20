@@ -1,4 +1,3 @@
-
 """
 
     You do not need to run this file.
@@ -6,7 +5,6 @@
     The code to set some initialization information.
 
 """
-
 
 import random, string, sys
 from java.lang import Runnable, Thread, String
@@ -34,7 +32,6 @@ from burp.api.montoya.http.message.params.HttpParameter import bodyParameter, co
 from io.github.cyal1.pyburp.PyBurp import http, proxy, utils, organizer
 from io.github.cyal1.pyburp.Tools import addIssue, getResponseHighlights, getOOBCanary, getSelectedText, replaceSelectedText, sendWithProxy
 
-
 # Set the default encoding used by the Python interpreter
 reload(sys)
 sys.setdefaultencoding('utf8')  # print(sys.getdefaultencoding())
@@ -60,7 +57,9 @@ def run_in_pool(pool):
     def decorator(func):
         def wrapper(*args, **kwargs):
             return pool.run(func, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -72,8 +71,10 @@ def run_in_thread(func):
                 # You can check if EXIT_FLAG is True in custom function to exit the thread.
                 if EXIT_FLAG is False:
                     func(*args, **kwargs)
+
         thread = Thread(JavaRunnable())
         thread.start()
+
     return wrapper
 
 
@@ -101,6 +102,11 @@ def randomstring(length=8):
 
 
 # https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/package-summary.html
+# https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/json/JsonUtils.html
+
+
+def jq(*args):
+    return utils.jsonUtils().read(*args)
 
 
 def urlencode(text):

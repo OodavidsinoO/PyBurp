@@ -36,6 +36,8 @@ def registerContextMenu(menus):
 @run_in_pool(pool)
 def compare_req(request, origin_resp):
     req_resp = sendRequest(request)
+    # print(origin_resp.statusCode(), req_resp.response().statusCode())
+    # print(origin_resp.body().length(), req_resp.response().body().length())
     if req_resp.response() is None:
         return
     body = req_resp.response().bodyToString()
@@ -72,7 +74,7 @@ def iter_and_modify_json(node, payload, concat=True, fuzz_key_only=False):
                     result.append(new_node)
             else: # test first parm in list
                 new_node = copy.copy(node)
-                new_node[i] = node[i] + payload if concat else payload
+                new_node[i] = str(node[i]) + payload if concat else payload
                 result.append(new_node)
                 break
     elif isinstance(node, (str, unicode)):
@@ -112,32 +114,33 @@ def fuzz_params(request, origin_response, payload="'", urlencode=False, concat=T
     def process_parameter(param):
         key, value, ptype = param.name(), param.value().strip(), param.type()
         decode_value = urllib.unquote(value)
-        if len(decode_value) > 2 and decode_value[0] in ['{', '[']: # param's value is json
+        if len(decode_value) > 2 and decode_value[0] in ['{', '[']:  # param's value is json
             try:
                 json_obj = json.loads(decode_value)
                 for i in iter_and_modify_json(json_obj, payload, concat if isinstance(payload, (str, unicode)) else False, fuzz_key_only):
-                    compare_req(request.withUpdatedParameters(parameter(key, urllib.quote(json.dumps(i,separators=(':',','))) if urlencode else json.dumps(i,separators=(':',',')), ptype)), origin_response)
+                    compare_req(request.withUpdatedParameters(parameter(key, urllib.quote(json.dumps(i,separators=(',',':'))) if urlencode else json.dumps(i,separators=(',',':')), ptype)), origin_response)
             except Exception as e:
                 print(e)
         if isinstance(payload, (str, unicode)):
             if fuzz_key_only:
                 compare_req(request.withRemovedParameters(param).withParameter(parameter(urllib.quote(key + payload) if urlencode else key + payload, param.value(),  ptype)), origin_response)
                 return
-            v = param.value() + payload if concat else payload
+            pv = urllib.unquote(param.value()) if urlencode else param.value()
+            v = pv + payload if concat else payload
             compare_req(request.withUpdatedParameters(parameter(key, urllib.quote(v) if urlencode else v, ptype)), origin_response)
 
     # fuzz json
-    if  request.contentType() == ContentType.JSON: 
+    if request.contentType() == ContentType.JSON:
         fuzz_json(request, origin_response, payload, concat, fuzz_key_only)
 
     # fuzz other parameter except json
-    for param in request.parameters(): 
+    for param in request.parameters():
         if param.type() == HttpParameterType.COOKIE and not fuzz_cookie:
             continue
         if param.type() in [HttpParameterType.BODY, HttpParameterType.URL, HttpParameterType.COOKIE]:
             process_parameter(param)
 
     # fuzz header
-    if fuzz_header: 
+    if fuzz_header:
         fuzz_headers(request, origin_response, payload, concat)
 
