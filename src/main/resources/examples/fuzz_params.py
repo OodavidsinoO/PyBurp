@@ -4,7 +4,7 @@ import urllib
 
 pool = RequestPool(5)
 
-ERROR_PATTERNS = {"unknown operator", "MongoError", "83b3j45b", "cannot be applied to a field", "expression is invalid", "SQL syntax", "java.sql.", "Syntax error", "Error SQL:", "SQL Execution", "\xe9\x99\x84\xe8\xbf\x91\xe6\x9c\x89\xe8\xaf\xad\xe6\xb3\x95\xe9\x94\x99\xe8\xaf\xaf", "SQLException", "\xe5\xbc\x95\xe5\x8f\xb7\xe4\xb8\x8d\xe5\xae\x8c\xe6\x95\xb4", "ORA-0"}
+ERROR_PATTERNS = {"unknown operator", "MongoError", "83b3j45b", "cannot be applied to a field", "expression is invalid", "SQL syntax", "java.sql.", "Syntax error", "Error SQL:", "SQL Execution", "\xe9\x99\x84\xe8\xbf\x91\xe6\x9c\x89\xe8\xaf\xad\xe6\xb3\x95\xe9\x94\x99\xe8\xaf\xaf", "SQLException", "\xe5\xbc\x95\xe5\x8f\xb7\xe4\xb8\x8d\xe5\xae\x8c\xe6\x95\xb4", " ORA-0", " ORA-1", "com.alibaba.fastjson", "### SQL:"}
 SKIP_HEADERS = {'content-length', 'host', 'transfer-encoding', 'cache-control', 'user-agent', 'pragma', 'priority', 'connection', 'cookie', 'content-type'}
 
 def finish():
@@ -15,7 +15,7 @@ def fuzz_value(req, resp):
     fuzz_params(req, resp, payload="'\")", urlencode=True, concat=True, fuzz_cookie=True, fuzz_header=True)
 
 def fuzz_key(req, resp):
-    fuzz_params(req, resp, payload="'", urlencode=False, concat=True, fuzz_cookie=True, fuzz_key_only=True)
+    fuzz_params(req, resp, payload="'()", urlencode=False, concat=True, fuzz_cookie=True, fuzz_key_only=True)
 
 def nosql(req, resp):
     fuzz_params(req, resp, payload={"$83b3j45b":"83b3j45b"}, urlencode=False, fuzz_cookie=True)
@@ -59,29 +59,29 @@ def iter_and_modify_json(node, payload, concat=True, fuzz_key_only=False):
                 del new_node1[key]
                 result.append(new_node1)
                 continue
-            modified_subnode = iter_and_modify_json(value, payload, concat)
+            modified_subnode = iter_and_modify_json(value, payload, concat, fuzz_key_only)
             for sub_result in modified_subnode:
                 new_node = copy.copy(node)
                 new_node[key] = sub_result
                 result.append(new_node)
     elif isinstance(node, list):
         for i in range(len(node)):
-            if isinstance(node[i],(dict, list)):
-                modified_subnode = iter_and_modify_json(node[i], payload, concat)
+            if isinstance(node[i], (dict, list)):
+                modified_subnode = iter_and_modify_json(node[i], payload, concat, fuzz_key_only)
                 for sub_result in modified_subnode:
                     new_node = copy.copy(node)
                     new_node[i] = sub_result
                     result.append(new_node)
-            else: # test first parm in list
+            else:
                 new_node = copy.copy(node)
                 new_node[i] = str(node[i]) + payload if concat else payload
                 result.append(new_node)
-                break
+            break  # test first parm in list
     elif isinstance(node, (str, unicode)):
         if len(node.strip()) > 2 and node.strip()[0] in ['{', '[']: # json string in query-string's value
             try:
-                json_node= json.loads(node)
-                for modified_node in iter_and_modify_json(json_node, payload, concat):
+                json_node = json.loads(node)
+                for modified_node in iter_and_modify_json(json_node, payload, concat, fuzz_key_only):
                     result.append(json.dumps(modified_node,separators=(':',',')))
             except Exception as e:
                 print(e)
