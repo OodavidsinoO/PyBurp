@@ -6,7 +6,7 @@
 
 """
 
-import random, string, sys
+import random, string, sys, time
 from java.lang import Runnable, Thread, String
 from java.util.concurrent import Executors
 import burp.api.montoya.core.ByteArray.byteArray as bytearray
@@ -27,6 +27,8 @@ from burp.api.montoya.scanner.AuditResult import auditResult
 from burp.api.montoya.scanner.audit.issues.AuditIssue import auditIssue
 from burp.api.montoya.http.message.HttpRequestResponse import httpRequestResponse
 from burp.api.montoya.http.message.requests.HttpRequest import httpRequestFromUrl, httpRequest, http2Request
+from burp.api.montoya.websocket.Direction import CLIENT_TO_SERVER, SERVER_TO_CLIENT
+import burp.api.montoya.proxy.websocket.TextMessageReceivedAction as TextMessageReceivedAction
 from burp.api.montoya.scanner.audit.insertionpoint.AuditInsertionPoint import auditInsertionPoint
 from burp.api.montoya.http.message.params.HttpParameter import bodyParameter, cookieParameter, parameter, urlParameter
 from io.github.cyal1.pyburp.PyBurp import http, proxy, utils, organizer
@@ -102,9 +104,7 @@ def randomstring(length=8):
 
 
 # https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/package-summary.html
-# https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/json/JsonUtils.html
-
-
+# https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/json/JsonUtils.html#read(java.lang.String,java.lang.String)
 def jq(*args):
     return utils.jsonUtils().read(*args)
 
@@ -131,3 +131,8 @@ def bytestring(s):
 
 def strz(s, charset="UTF8"):
     return str(String(s, charset))
+
+
+def ts():
+    return str(int(time.time() * 1000))
+

@@ -4,7 +4,8 @@ import urllib
 
 pool = RequestPool(5)
 
-ERROR_PATTERNS = {"unknown operator", "MongoError", "83b3j45b", "cannot be applied to a field", "expression is invalid", "SQL syntax", "java.sql.", "Syntax error", "Error SQL:", "SQL Execution", "\xe9\x99\x84\xe8\xbf\x91\xe6\x9c\x89\xe8\xaf\xad\xe6\xb3\x95\xe9\x94\x99\xe8\xaf\xaf", "SQLException", "\xe5\xbc\x95\xe5\x8f\xb7\xe4\xb8\x8d\xe5\xae\x8c\xe6\x95\xb4", " ORA-0", " ORA-1", "com.alibaba.fastjson", "### SQL:"}
+ERROR_PATTERNS = {"unknown operator", "MongoError", "cannot be applied to a field", "expression is invalid", "SQL syntax", "java.sql.", "Syntax error", "Error SQL:", "SQL Execution", "\xe9\x99\x84\xe8\xbf\x91\xe6\x9c\x89\xe8\xaf\xad\xe6\xb3\x95\xe9\x94\x99\xe8\xaf\xaf", "SQLException", "\xe5\xbc\x95\xe5\x8f\xb7\xe4\xb8\x8d\xe5\xae\x8c\xe6\x95\xb4", " ORA-0", " ORA-1", "com.alibaba.fastjson","### SQL:"}
+INFO_PATTERNS = {"83b3j45b"}
 SKIP_HEADERS = {'content-length', 'host', 'transfer-encoding', 'cache-control', 'user-agent', 'pragma', 'priority', 'connection', 'cookie', 'content-type'}
 
 def finish():
@@ -41,6 +42,12 @@ def compare_req(request, origin_resp):
     if req_resp.response() is None:
         return
     body = req_resp.response().bodyToString()
+    for highlight in INFO_PATTERNS:
+        if highlight in body:
+            addIssue(auditIssue("Spring Bean", "String detail", "String remediation", req_resp.request().url(),
+                                AuditIssueSeverity.INFORMATION, AuditIssueConfidence.CERTAIN, "String background",
+                                "String remediationBackground", AuditIssueSeverity.MEDIUM, req_resp.withResponseMarkers(getResponseHighlights(req_resp, highlight))))
+            break
     for highlight in ERROR_PATTERNS:
         if highlight in body:
             addIssue(auditIssue("Found Injection", "String detail", "String remediation", req_resp.request().url(),
@@ -66,7 +73,7 @@ def iter_and_modify_json(node, payload, concat=True, fuzz_key_only=False):
                 result.append(new_node)
     elif isinstance(node, list):
         for i in range(len(node)):
-            if isinstance(node[i], (dict, list)):
+            if isinstance(node[i],(dict, list)):
                 modified_subnode = iter_and_modify_json(node[i], payload, concat, fuzz_key_only)
                 for sub_result in modified_subnode:
                     new_node = copy.copy(node)
@@ -76,11 +83,11 @@ def iter_and_modify_json(node, payload, concat=True, fuzz_key_only=False):
                 new_node = copy.copy(node)
                 new_node[i] = str(node[i]) + payload if concat else payload
                 result.append(new_node)
-            break  # test first parm in list
+            break # test first parm in list
     elif isinstance(node, (str, unicode)):
         if len(node.strip()) > 2 and node.strip()[0] in ['{', '[']: # json string in query-string's value
             try:
-                json_node = json.loads(node)
+                json_node= json.loads(node)
                 for modified_node in iter_and_modify_json(json_node, payload, concat, fuzz_key_only):
                     result.append(json.dumps(modified_node,separators=(':',',')))
             except Exception as e:
