@@ -9,7 +9,7 @@ PyBurp is a Burp Suite extension that provides predefined Python functions for H
 - Powerful parameter fuzzing and testing
 - Remote method invocation through Chrome DevTools Protocol and gRPC
 
-For more features, see the [Examples'](https://github.com/cyal1/PyBurp/tree/main?tab=readme-ov-file#Examples) section below.
+For more features, see the [Examples'](#Examples) section below.
 
 ## Video Tutorials
 - [In PyBurp, invoke JavaScript functions in a webpage via the Chrome DevTools Protocol](https://youtu.be/FRCnZ8a7UGI)
