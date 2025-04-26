@@ -35,7 +35,7 @@ PyBurp 提供了几个预定义函数，当在脚本中定义时，会自动在 
 | registerContextMenu(menus) | 注册自定义上下文菜单项 |
 | processPayload(str) | 注册自定义 Intruder 负载处理器 |
 | handleInteraction(interaction: [Interaction](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/collaborator/Interaction.html)) | 轮询 Collaborator 服务器 |
-| passiveAudit(baseRequestResponse: [HttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/http/message/HttpRequestResponse.html))` | 执行被动扫描 |
+| passiveAudit(baseRequestResponse: [HttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/http/message/HttpRequestResponse.html)) | 执行被动扫描 |
 | activeAudit(baseRequestResponse: [HttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/http/message/HttpRequestResponse.html), auditInsertionPoint: [AuditInsertionPoint](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/scanner/audit/insertionpoint/AuditInsertionPoint.html)) | 执行主动扫描 |
 | handleWsTextMsg(message: [TextMessage](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/websocket/TextMessage.html)) | 处理文本 WebSocket 消息 |
 | handleWsBinMsg(message: [BinaryMessage](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/websocket/BinaryMessage.html)) | 处理二进制 WebSocket 消息 |

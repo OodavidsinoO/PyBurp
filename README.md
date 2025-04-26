@@ -133,7 +133,7 @@ Here's a Python demonstration:
 3. The `bytes` type returned by the server is of type [array.array('b',initializer)](https://www.jython.org/jython-old-sites/docs/library/array.html#array-efficient-arrays-of-numeric-values) in PyBurp，you can consider it as `byte[]`, except that you need to use `tostring()` to convert it to a string instead of `toString()`.
 
 
-For more examples, check out [`rpc_debug.py`](examples/rpc_debug.py) and [`encryptedJsonParamRpc.py`](examples/encryptedJsonParamRpc.py). You can also find examples of Frida interactions in [server_frida.py](https://github.com/cyal1/pyburpRPC/blob/main/examples/server_frida.py).
+For more examples, check out [`rpc_debug.py`](src/main/resources/examples/rpc_debug.py) and [`encryptedJsonParamRpc.py`](src/main/resources/examples/encryptedJsonParamRpc.py). You can also find examples of Frida interactions in [server_frida.py](https://github.com/cyal1/pyburpRPC/blob/main/examples/server_frida.py).
 
 ## Development Quick Start
 
