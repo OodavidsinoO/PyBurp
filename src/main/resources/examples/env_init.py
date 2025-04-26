@@ -109,8 +109,8 @@ def jq(*args):
     return utils.jsonUtils().read(*args)
 
 
-def urlencode(text):
-    return utils.urlUtils().encode(text.decode())
+def urlencode(text):  # text: str
+    return utils.urlUtils().encode(text)
 
 
 def urldecode(text):
@@ -121,8 +121,8 @@ def base64encode(text):
     return utils.base64Utils().encodeToString(text)
 
 
-def base64decode(text):  # return ByteArray
-    return utils.base64Utils().decode(text.decode())
+def base64decode(text):  # text: str
+    return utils.base64Utils().decode(text).getBytes().tostring()
 
 
 def bytestring(s):
