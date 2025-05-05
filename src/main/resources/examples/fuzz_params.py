@@ -144,7 +144,7 @@ def fuzz_params(request, origin_response, payload="'", urlencode=False, concat=T
         # detect base64 in parameter's value and decode value is json
         if decode_value.startswith("eyJ") or decode_value.startswith("IC") or decode_value.startswith("IH") or decode_value.startswith("Cg") or decode_value.startswith("Cn"): 
             try:
-                b64decode_value = base64decode(decode_value)
+                b64decode_value = base64decode(decode_value).strip()
                 if len(b64decode_value) > 2 and b64decode_value[0] in ['{', '[']:
                     json_obj = json.loads(b64decode_value)
                     for i in iter_and_modify_json(json_obj, payload, concat if isinstance(payload, (str, unicode)) else False, fuzz_key_only):
