@@ -48,6 +48,7 @@ PyBurp includes a variety of example scripts to demonstrate its capabilities:
 
 | File                                                                      | Description |
 |---------------------------------------------------------------------------|-------------|
+| [`randomplz_match_and_replace.py`](src/main/resources/examples/randomplz_match_and_replace.py) | Match and replace a defined string with a blind XSS payload including a random string for xsshunter-go payload source correlation |
 | [`env_init.py`](src/main/resources/examples/env_init.py)                  | Automatically runs before each user script execution, providing common classes and methods |
 | [`bambdas.py`](src/main/resources/examples/bambdas.py)                                       | Quick information extraction from Proxy history |
 | [`chrome_devtools_protocol.py`](src/main/resources/examples/chrome_devtools_protocol.py)     | Remote Chrome DevTools method invocation |
